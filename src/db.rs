@@ -1,7 +1,14 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
+
+pub enum RedisValue{
+    String(String),
+    List(Vec<String>),
+    Set(HashSet<String>),
+    Hash(HashMap<String, String>),
+}
 
 pub struct Database {
-    store: HashMap<String, String>, //key : value
+    store: HashMap<String, RedisValue>, //key : value
 }
 
 impl Database {
@@ -12,11 +19,14 @@ impl Database {
     }
 
     pub fn set(&mut self, key: String, value: String) {
-        self.store.insert(key, value);
+        self.store.insert(key, RedisValue::String(value));
     }
 
-    pub fn get(&self, key: &str) -> Option<&String> {
-        self.store.get(key)
+    pub fn get(&self, key: &str) -> Option<String> {
+        match self.store.get(key) {
+            Some(RedisValue::String(value)) => Some(value.clone()),
+            _ => None,
+        }
     }
 
     pub fn delete(&mut self, keys: &[String]) -> usize {
@@ -36,24 +46,18 @@ impl Database {
     }
 
     pub fn incr(&mut self, key: &str) -> Result<i64, &'static str> {
-        let val = self.store.entry(key.to_string()).or_insert("0".to_string());
-        match val.parse::<i64>() {
-            Ok(num) => {
-                let new_num = num + 1;
-                *val = new_num.to_string();
-                Ok(new_num)
-            }
-            Err(_) => Err("Value is not a number"),
-        }
+        self.incr_by(key, 1)
     }
     pub fn incr_by(&mut self, key: &str, by: i64) -> Result<i64, &'static str> {
-        let val = self.store.entry(key.to_string()).or_insert("0".to_string());
-        match val.parse::<i64>() {
-            Ok(num) => {
-                *val = (num + by).to_string();
-                Ok(num + by)
+        let val  = self.store.entry(key.to_string()).or_insert( RedisValue::String("0".to_string()));
+        match val{
+            RedisValue::String(ref mut s) => {
+                let current_value: i64 = s.parse().map_err(|_| "Value is not an integer")?;
+                let new_value = current_value + by;
+                *s = new_value.to_string();
+                Ok(new_value)
             }
-            Err(_) => Err("value is not an integer"),
+            _ => Err("Value is not an integer"),
         }
     }
     pub fn keys(&self) -> Vec<String> {
