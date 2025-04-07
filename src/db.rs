@@ -17,4 +17,14 @@ impl Database {
     pub fn get(&self, key : &str) -> Option<&String> {
         self.store.get(key)
     }
+
+    pub fn delete(&mut self, keys : &[String]) -> usize {
+        let mut removed = 0;
+        for key in keys {
+            if self.store.remove(key).is_some() {
+                removed += 1;
+            }
+        }
+        removed
+    }
 }

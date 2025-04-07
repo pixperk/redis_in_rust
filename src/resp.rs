@@ -24,6 +24,10 @@ pub fn handle_command(input: &str, db: &mut Database) -> String {
                 "$-1\r\n".to_string()
             }
         }
+        "DEL" =>{
+            let deleted = db.delete(&parts[1..]);
+            format!(":{}\r\n", deleted)
+        }
         _      => "-ERR unknown command\r\n".to_string(),
     }
 }
