@@ -44,7 +44,17 @@ pub fn handle_command(input: &str, db: &mut Database) -> String {
 
         "SET" => {
             if let (Some(key), Some(value)) = (parts.get(1), parts.get(2)) {
-                db.set(key.clone(), value.clone());
+                let mut expiry = None;
+
+                if let (Some(option), Some(seconds)) = (parts.get(3), parts.get(4)) {
+                    if option.to_uppercase() == "EX" {
+                        if let Ok(sec) = seconds.parse::<u64>() {
+                            expiry = Some(sec);
+                        }
+                    }
+                }
+
+                db.set(key, value.clone(), expiry);
                 "+OK\r\n".to_string()
             } else {
                 wrong_args("SET")
@@ -383,6 +393,35 @@ pub fn handle_command(input: &str, db: &mut Database) -> String {
                 format!(":{}\r\n", if exists { 1 } else { 0 })
             } else {
                 wrong_args("HEXISTS")
+            }
+        }
+
+        "EXPIRE" => {
+            if let (Some(key), Some(seconds_str)) = (parts.get(1), parts.get(2)) {
+                if let Ok(seconds) = seconds_str.parse::<u64>() {
+                    db.expire(key, seconds);
+                    "+OK\r\n".to_string()
+                } else {
+                    "-ERR invalid seconds\r\n".to_string()
+                }
+            } else {
+                wrong_args("EXPIRE")
+            }
+        }
+        "TTL" => {
+            if let Some(key) = parts.get(1) {
+                let ttl = db.ttl(key);
+                format!(":{}\r\n", ttl)
+            } else {
+                wrong_args("TTL")
+            }
+        }
+        "PERSIST" => {
+            if let Some(key) = parts.get(1) {
+                db.persist(key);
+                "+OK\r\n".to_string()
+            } else {
+                wrong_args("PERSIST")
             }
         }
 
