@@ -191,7 +191,9 @@ pub fn handle_command(input: &str, db: &mut Database) -> String {
         }
 
         "LSET" => {
-            if let (Some(key), Some(index_str), Some(value)) = (parts.get(1), parts.get(2), parts.get(3)) {
+            if let (Some(key), Some(index_str), Some(value)) =
+                (parts.get(1), parts.get(2), parts.get(3))
+            {
                 if let Ok(index) = index_str.parse::<usize>() {
                     match db.lset(key, index, value.to_string()) {
                         Ok(()) => "+OK\r\n".to_string(),
@@ -206,8 +208,11 @@ pub fn handle_command(input: &str, db: &mut Database) -> String {
         }
 
         "LRANGE" => {
-            if let (Some(key), Some(start_str), Some(end_str)) = (parts.get(1), parts.get(2), parts.get(3)) {
-                if let (Ok(start), Ok(end)) = (start_str.parse::<isize>(), end_str.parse::<isize>()) {
+            if let (Some(key), Some(start_str), Some(end_str)) =
+                (parts.get(1), parts.get(2), parts.get(3))
+            {
+                if let (Ok(start), Ok(end)) = (start_str.parse::<isize>(), end_str.parse::<isize>())
+                {
                     let values = db.lrange(key, start, end);
                     let mut response = format!("*{}\r\n", values.len());
                     for value in values {
@@ -222,7 +227,53 @@ pub fn handle_command(input: &str, db: &mut Database) -> String {
             }
         }
 
-       
+        "SADD" => {
+            if let Some(key) = parts.get(1) {
+                let len = db.sadd(key, &parts[2..]);
+                format!(":{}\r\n", len)
+            } else {
+                "-ERR wrong number of arguments for 'SADD'\r\n".to_string()
+            }
+        }
+        "SREM" => {
+            if let Some(key) = parts.get(1) {
+                let len = db.srem(key, &parts[2..]);
+                format!(":{}\r\n", len)
+            } else {
+                "-ERR wrong number of arguments for 'SREM'\r\n".to_string()
+            }
+        }
+        "SMEMBERS" => {
+            if let Some(key) = parts.get(1) {
+                let members = db.smembers(key);
+                let mut response = format!("*{}\r\n", members.len());
+                for member in members {
+                    response.push_str(&format!("${}\r\n{}\r\n", member.len(), member));
+                }
+                response
+            } else {
+                "-ERR wrong number of arguments for 'SMEMBERS'\r\n".to_string()
+            }
+        }
+        "SISMEMBER" => {
+            if let (Some(key), Some(member)) = (parts.get(1), parts.get(2)) {
+                let is_member = db.sismember(key, member);
+                let resp_val = if is_member { 1 } else { 0 };
+                format!(":{}\r\n", resp_val)
+            } else {
+                "-ERR wrong number of arguments for 'SISMEMBER'\r\n".to_string()
+            }
+        }
+
+        "SCARD" => {
+            if let Some(key) = parts.get(1) {
+                let score = db.scard(key);
+                format!(":{}\r\n", score)
+            } else {
+                "-ERR wrong number of arguments for 'SCARD'\r\n".to_string()
+            }
+        }
+
 
         _ => "-ERR unknown command\r\n".to_string(),
     }
