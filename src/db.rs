@@ -67,4 +67,62 @@ impl Database {
     pub fn flushdb(&mut self) {
         self.store.clear();
     }
+
+    pub fn lpush(&mut self, key : &str, values : &[String])->usize{
+       let entry = self.store.entry(key.to_string())
+        .or_insert(RedisValue::List(vec![]));
+         if let RedisValue::List(list) = entry{
+            for value in values.iter().rev(){
+                list.insert(0, value.clone());
+            }
+            list.len()
+         }else{
+            0
+         }
+    }
+
+    pub fn rpush(&mut self, key : &str, values : &[String])->usize{
+        let entry = self.store.entry(key.to_string())
+        .or_insert(RedisValue::List(vec![]));
+         if let RedisValue::List(list) = entry{
+            for value in values.iter(){
+                list.push(value.clone());
+            }
+            list.len()
+            }else{
+                0
+            }
+         }
+    
+
+    pub fn lpop(&mut self, key : &str) -> Option<String>{
+        match self.store.get_mut(key){
+            Some(RedisValue::List(ref mut list))=>{
+                if list.is_empty(){
+                    None
+                }else{
+                    Some(list.remove(0))
+                }
+            }
+            _ => None,
+        }
+    }
+
+    pub fn rpop(&mut self, key : &str) -> Option<String>{
+        match self.store.get_mut(key){
+            Some(RedisValue::List(ref mut list))=>{
+                list.pop()
+            }
+            _ => None,
+        }
+    }
+
+    pub fn llen (&self, key : &str) -> usize{
+        match self.store.get(key){
+            Some(RedisValue::List(list))=> list.len(),
+            _ => 0,
+        }
+    }
+
 }
+

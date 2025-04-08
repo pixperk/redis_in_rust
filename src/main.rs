@@ -45,7 +45,13 @@ fn main() {
                         let input = String::from_utf8_lossy(&buf[..bytes_read]);
                         println!("Received: {}", input);
 
-                        let mut db = db.lock().unwrap();
+                        let mut db = match db.lock() {
+                            Ok(db_guard) => db_guard,
+                            Err(e) => {
+                                println!("Failed to acquire database lock: {:?}", e);
+                                break;
+                            }
+                        };
                         let response = handle_command(&input, &mut db);
 
                         if let Err(e) = stream.write_all(response.as_bytes()) {
