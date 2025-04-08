@@ -174,6 +174,56 @@ pub fn handle_command(input: &str, db: &mut Database) -> String {
             }
         }
 
+        "LINDEX" => {
+            if let (Some(key), Some(index_str)) = (parts.get(1), parts.get(2)) {
+                if let Ok(index) = index_str.parse::<usize>() {
+                    if let Some(value) = db.lindex(key, index) {
+                        format!("${}\r\n{}\r\n", value.len(), value)
+                    } else {
+                        "$-1\r\n".to_string()
+                    }
+                } else {
+                    "-ERR invalid index\r\n".to_string()
+                }
+            } else {
+                "-ERR wrong number of arguments for 'LINDEX'\r\n".to_string()
+            }
+        }
+
+        "LSET" => {
+            if let (Some(key), Some(index_str), Some(value)) = (parts.get(1), parts.get(2), parts.get(3)) {
+                if let Ok(index) = index_str.parse::<usize>() {
+                    match db.lset(key, index, value.to_string()) {
+                        Ok(()) => "+OK\r\n".to_string(),
+                        Err(e) => format!("-ERR {}\r\n", e),
+                    }
+                } else {
+                    "-ERR invalid index\r\n".to_string()
+                }
+            } else {
+                "-ERR wrong number of arguments for 'LSET'\r\n".to_string()
+            }
+        }
+
+        "LRANGE" => {
+            if let (Some(key), Some(start_str), Some(end_str)) = (parts.get(1), parts.get(2), parts.get(3)) {
+                if let (Ok(start), Ok(end)) = (start_str.parse::<isize>(), end_str.parse::<isize>()) {
+                    let values = db.lrange(key, start, end);
+                    let mut response = format!("*{}\r\n", values.len());
+                    for value in values {
+                        response.push_str(&format!("${}\r\n{}\r\n", value.len(), value));
+                    }
+                    response
+                } else {
+                    "-ERR invalid range\r\n".to_string()
+                }
+            } else {
+                "-ERR wrong number of arguments for 'LRANGE'\r\n".to_string()
+            }
+        }
+
+       
+
         _ => "-ERR unknown command\r\n".to_string(),
     }
 }

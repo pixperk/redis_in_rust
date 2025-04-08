@@ -124,5 +124,52 @@ impl Database {
         }
     }
 
+    pub fn lindex(&self, key : &str, index : usize) -> Option<String>{
+        match self.store.get(key){
+            Some(RedisValue::List(list))=>{
+                if index < list.len(){
+                    Some(list[index].clone())
+                }else{
+                    None
+                }
+            }
+            _ => None,
+        }
+    }
+
+    pub fn lset(&mut self, key : &str, index : usize, value : String) -> Result<(), &'static str>{
+        match self.store.get_mut(key){
+            Some(RedisValue::List(ref mut list))=>{
+                if index < list.len(){
+                    list[index] = value;
+                    Ok(())
+                }else{
+                    Err("Index out of range")
+                }
+            }
+            _ => Err("Key does not exist or is not a list"),
+        }
+    }
+
+    pub fn lrange(&self, key : &str, start : isize, end:isize) -> Vec<String>{
+        match self.store.get(key){
+            Some(RedisValue::List(list))=>{
+                let start = if start < 0 { list.len() as isize + start } else { start };
+                let end = if end < 0 { list.len() as isize + end } else { end };
+                if start < 0 || end < 0 || start >= list.len() as isize || end >= list.len() as isize {
+                    vec![]
+                }else{
+                    let start = start as usize;
+                    let end = end as usize;
+                    list[start..=end].to_vec()
+                }
+            }
+            _ => vec![],
+        }
+    }
+
+
+
 }
+
 
