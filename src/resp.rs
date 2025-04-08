@@ -1,5 +1,21 @@
 use crate::db::Database;
 
+fn wrong_args(cmd: &str) -> String {
+    format!("-ERR wrong number of arguments for '{}'\r\n", cmd)
+}
+
+fn bulk_string(s: &str) -> String {
+    format!("${}\r\n{}\r\n", s.len(), s)
+}
+
+fn format_array(values: Vec<String>) -> String {
+    let mut resp = format!("*{}\r\n", values.len());
+    for v in values {
+        resp.push_str(&bulk_string(&v));
+    }
+    resp
+}
+
 pub fn parse_resp(input: &str) -> Vec<String> {
     input
         .lines()
@@ -13,14 +29,16 @@ pub fn handle_command(input: &str, db: &mut Database) -> String {
     if parts.is_empty() {
         return "-ERR empty command\r\n".to_string();
     }
-    match parts[0].to_uppercase().as_str() {
+
+    let cmd = parts[0].to_uppercase();
+    match cmd.as_str() {
         "PING" => "+PONG\r\n".to_string(),
 
         "ECHO" => {
             if let Some(arg) = parts.get(1) {
-                format!("${}\r\n{}\r\n", arg.len(), arg)
+                bulk_string(arg)
             } else {
-                "-ERR wrong number of arguments for 'ECHO'\r\n".to_string()
+                wrong_args("ECHO")
             }
         }
 
@@ -29,25 +47,25 @@ pub fn handle_command(input: &str, db: &mut Database) -> String {
                 db.set(key.clone(), value.clone());
                 "+OK\r\n".to_string()
             } else {
-                "-ERR wrong number of arguments for 'SET'\r\n".to_string()
+                wrong_args("SET")
             }
         }
 
         "GET" => {
             if let Some(key) = parts.get(1) {
                 if let Some(value) = db.get(key) {
-                    format!("${}\r\n{}\r\n", value.len(), value)
+                    bulk_string(&value)
                 } else {
                     "$-1\r\n".to_string()
                 }
             } else {
-                "-ERR wrong number of arguments for 'GET'\r\n".to_string()
+                wrong_args("GET")
             }
         }
 
         "DEL" => {
             if parts.len() < 2 {
-                "-ERR wrong number of arguments for 'DEL'\r\n".to_string()
+                wrong_args("DEL")
             } else {
                 let deleted = db.delete(&parts[1..]);
                 format!(":{}\r\n", deleted)
@@ -56,7 +74,7 @@ pub fn handle_command(input: &str, db: &mut Database) -> String {
 
         "EXISTS" => {
             if parts.len() < 2 {
-                "-ERR wrong number of arguments for 'EXISTS'\r\n".to_string()
+                wrong_args("EXISTS")
             } else {
                 let exists = db.exists(&parts[1..]);
                 format!(":{}\r\n", exists)
@@ -70,7 +88,7 @@ pub fn handle_command(input: &str, db: &mut Database) -> String {
                     Err(e) => format!("-ERR {}\r\n", e),
                 }
             } else {
-                "-ERR wrong number of arguments for 'INCR'\r\n".to_string()
+                wrong_args("INCR")
             }
         }
 
@@ -82,7 +100,7 @@ pub fn handle_command(input: &str, db: &mut Database) -> String {
                     Err(e) => format!("-ERR {}\r\n", e),
                 }
             } else {
-                "-ERR wrong number of arguments for 'INCRBY'\r\n".to_string()
+                wrong_args("INCRBY")
             }
         }
 
@@ -94,7 +112,7 @@ pub fn handle_command(input: &str, db: &mut Database) -> String {
                     Err(e) => format!("-ERR {}\r\n", e),
                 }
             } else {
-                "-ERR wrong number of arguments for 'DECRBY'\r\n".to_string()
+                wrong_args("DECRBY")
             }
         }
 
@@ -105,7 +123,7 @@ pub fn handle_command(input: &str, db: &mut Database) -> String {
                     Err(e) => format!("-ERR {}\r\n", e),
                 }
             } else {
-                "-ERR wrong number of arguments for 'DECR'\r\n".to_string()
+                wrong_args("DECR")
             }
         }
 
@@ -113,7 +131,7 @@ pub fn handle_command(input: &str, db: &mut Database) -> String {
             let keys = db.keys();
             let mut response = format!("*{}\r\n", keys.len());
             for key in keys {
-                response.push_str(&format!("${}\r\n{}\r\n", key.len(), key));
+                response.push_str(&bulk_string(&key));
             }
             response
         }
@@ -126,24 +144,24 @@ pub fn handle_command(input: &str, db: &mut Database) -> String {
         "LPOP" => {
             if let Some(key) = parts.get(1) {
                 if let Some(value) = db.lpop(key) {
-                    format!("${}\r\n{}\r\n", value.len(), value)
+                    bulk_string(&value)
                 } else {
                     "$-1\r\n".to_string()
                 }
             } else {
-                "-ERR wrong number of arguments for 'LPOP'\r\n".to_string()
+                wrong_args("LPOP")
             }
         }
 
         "RPOP" => {
             if let Some(key) = parts.get(1) {
                 if let Some(value) = db.rpop(key) {
-                    format!("${}\r\n{}\r\n", value.len(), value)
+                    bulk_string(&value)
                 } else {
                     "$-1\r\n".to_string()
                 }
             } else {
-                "-ERR wrong number of arguments for 'RPOP'\r\n".to_string()
+                wrong_args("RPOP")
             }
         }
 
@@ -152,7 +170,7 @@ pub fn handle_command(input: &str, db: &mut Database) -> String {
                 let len = db.lpush(key, &parts[2..]);
                 format!(":{}\r\n", len)
             } else {
-                "-ERR wrong number of arguments for 'LPUSH'\r\n".to_string()
+                wrong_args("LPUSH")
             }
         }
 
@@ -161,7 +179,7 @@ pub fn handle_command(input: &str, db: &mut Database) -> String {
                 let len = db.rpush(key, &parts[2..]);
                 format!(":{}\r\n", len)
             } else {
-                "-ERR wrong number of arguments for 'RPUSH'\r\n".to_string()
+                wrong_args("RPUSH")
             }
         }
 
@@ -170,7 +188,7 @@ pub fn handle_command(input: &str, db: &mut Database) -> String {
                 let len = db.llen(key);
                 format!(":{}\r\n", len)
             } else {
-                "-ERR wrong number of arguments for 'LLEN'\r\n".to_string()
+                wrong_args("LLEN")
             }
         }
 
@@ -178,7 +196,7 @@ pub fn handle_command(input: &str, db: &mut Database) -> String {
             if let (Some(key), Some(index_str)) = (parts.get(1), parts.get(2)) {
                 if let Ok(index) = index_str.parse::<usize>() {
                     if let Some(value) = db.lindex(key, index) {
-                        format!("${}\r\n{}\r\n", value.len(), value)
+                        bulk_string(&value)
                     } else {
                         "$-1\r\n".to_string()
                     }
@@ -186,7 +204,7 @@ pub fn handle_command(input: &str, db: &mut Database) -> String {
                     "-ERR invalid index\r\n".to_string()
                 }
             } else {
-                "-ERR wrong number of arguments for 'LINDEX'\r\n".to_string()
+                wrong_args("LINDEX")
             }
         }
 
@@ -203,7 +221,7 @@ pub fn handle_command(input: &str, db: &mut Database) -> String {
                     "-ERR invalid index\r\n".to_string()
                 }
             } else {
-                "-ERR wrong number of arguments for 'LSET'\r\n".to_string()
+                wrong_args("LSET")
             }
         }
 
@@ -216,14 +234,14 @@ pub fn handle_command(input: &str, db: &mut Database) -> String {
                     let values = db.lrange(key, start, end);
                     let mut response = format!("*{}\r\n", values.len());
                     for value in values {
-                        response.push_str(&format!("${}\r\n{}\r\n", value.len(), value));
+                        response.push_str(&bulk_string(&value));
                     }
                     response
                 } else {
                     "-ERR invalid range\r\n".to_string()
                 }
             } else {
-                "-ERR wrong number of arguments for 'LRANGE'\r\n".to_string()
+                wrong_args("LRANGE")
             }
         }
 
@@ -232,48 +250,141 @@ pub fn handle_command(input: &str, db: &mut Database) -> String {
                 let len = db.sadd(key, &parts[2..]);
                 format!(":{}\r\n", len)
             } else {
-                "-ERR wrong number of arguments for 'SADD'\r\n".to_string()
+                wrong_args("SADD")
             }
         }
+
         "SREM" => {
             if let Some(key) = parts.get(1) {
                 let len = db.srem(key, &parts[2..]);
                 format!(":{}\r\n", len)
             } else {
-                "-ERR wrong number of arguments for 'SREM'\r\n".to_string()
+                wrong_args("SREM")
             }
         }
+
         "SMEMBERS" => {
             if let Some(key) = parts.get(1) {
                 let members = db.smembers(key);
-                let mut response = format!("*{}\r\n", members.len());
-                for member in members {
-                    response.push_str(&format!("${}\r\n{}\r\n", member.len(), member));
-                }
-                response
+                format_array(members)
             } else {
-                "-ERR wrong number of arguments for 'SMEMBERS'\r\n".to_string()
+                wrong_args("SMEMBERS")
             }
         }
+
         "SISMEMBER" => {
             if let (Some(key), Some(member)) = (parts.get(1), parts.get(2)) {
                 let is_member = db.sismember(key, member);
-                let resp_val = if is_member { 1 } else { 0 };
-                format!(":{}\r\n", resp_val)
+                format!(":{}\r\n", if is_member { 1 } else { 0 })
             } else {
-                "-ERR wrong number of arguments for 'SISMEMBER'\r\n".to_string()
+                wrong_args("SISMEMBER")
             }
         }
 
         "SCARD" => {
             if let Some(key) = parts.get(1) {
-                let score = db.scard(key);
-                format!(":{}\r\n", score)
+                let count = db.scard(key);
+                format!(":{}\r\n", count)
             } else {
-                "-ERR wrong number of arguments for 'SCARD'\r\n".to_string()
+                wrong_args("SCARD")
             }
         }
 
+        "HSET" => {
+            if let Some(key) = parts.get(1) {
+                if parts.len() < 4 || parts.len() % 2 != 0 {
+                    return wrong_args("HSET");
+                }
+
+                let mut inserted = 0;
+                let mut i = 2;
+                while i < parts.len() {
+                    if let (Some(field), Some(value)) = (parts.get(i), parts.get(i + 1)) {
+                        inserted += db.hset(key, field, value);
+                        i += 2;
+                    } else {
+                        return wrong_args("HSET");
+                    }
+                }
+
+                format!(":{}\r\n", inserted)
+            } else {
+                wrong_args("HSET")
+            }
+        }
+
+        "HGET" => {
+            if let (Some(key), Some(field)) = (parts.get(1), parts.get(2)) {
+                match db.hget(key, field) {
+                    Some(val) => bulk_string(&val),
+                    None => "$-1\r\n".to_string(),
+                }
+            } else {
+                wrong_args("HGET")
+            }
+        }
+
+        "HDEL" => {
+            if let Some(key) = parts.get(1) {
+                let fields: Vec<String> = parts.iter().skip(2).cloned().collect();
+                if fields.is_empty() {
+                    wrong_args("HDEL")
+                } else {
+                    let removed = db.hdel(key, &fields);
+                    format!(":{}\r\n", removed)
+                }
+            } else {
+                wrong_args("HDEL")
+            }
+        }
+
+        "HKEYS" => {
+            if let Some(key) = parts.get(1) {
+                format_array(db.hkeys(key))
+            } else {
+                wrong_args("HKEYS")
+            }
+        }
+
+        "HVALS" => {
+            if let Some(key) = parts.get(1) {
+                format_array(db.hvals(key))
+            } else {
+                wrong_args("HVALS")
+            }
+        }
+
+        "HLEN" => {
+            if let Some(key) = parts.get(1) {
+                let len = db.hlen(key);
+                format!(":{}\r\n", len)
+            } else {
+                wrong_args("HLEN")
+            }
+        }
+
+        "HGETALL" => {
+            if let Some(key) = parts.get(1) {
+                let hash = db.hgetall(key);
+                let mut resp = format!("*{}\r\n", hash.len() * 2);
+                for (k, v) in hash {
+                    resp.push_str(&bulk_string(&k));
+                    resp.push_str(&bulk_string(&v));
+                }
+                resp
+            } else {
+                wrong_args("HGETALL")
+            }
+        }
+
+        "HEXISTS" => {
+            if let (Some(key), Some(field)) = (parts.get(1), parts.get(2)) {
+                let exists = db.hexists(key, field);
+                format!(":{}\r\n", if exists { 1 } else { 0 })
+            } else {
+                wrong_args("HEXISTS")
+            }
+        }
 
         _ => "-ERR unknown command\r\n".to_string(),
     }

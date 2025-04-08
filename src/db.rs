@@ -223,6 +223,84 @@ impl Database {
         }
     }
 
+    pub fn hset(&mut self, key : &str, field : &str, value : &str) -> usize{
+        let entry = self.store.entry(key.to_string())
+        .or_insert(RedisValue::Hash(HashMap::new()));
+         if let RedisValue::Hash(hash) = entry{
+            hash.insert(field.to_string(), value.to_string());
+            hash.len()
+         }else{
+            0
+         }
+    }
+
+    pub fn hget(&self, key : &str, field : &str) -> Option<String>{
+        match self.store.get(key){
+            Some(RedisValue::Hash(hash))=>{
+                hash.get(field).cloned()
+            }
+            _ => None,
+        }
+    }
+    pub fn hdel(&mut self, key : &str, fields : &[String]) -> usize{
+        match self.store.get_mut(key){
+            Some(RedisValue::Hash(ref mut hash))=>{
+                let mut removed = 0;
+                for field in fields.iter(){
+                    if hash.remove(field).is_some(){
+                        removed += 1;
+                    }
+                }
+                removed
+            }
+            _ => 0,
+        }
+    }
+
+    pub fn hkeys(&self, key : &str) -> Vec<String>{
+        match self.store.get(key){
+            Some(RedisValue::Hash(hash))=>{
+                hash.keys().cloned().collect()
+            }
+            _ => vec![],
+        }
+    }
+
+    pub fn hvals(&self, key : &str) -> Vec<String>{
+        match self.store.get(key){
+            Some(RedisValue::Hash(hash))=>{
+                hash.values().cloned().collect()
+            }
+            _ => vec![],
+        }
+    }
+
+    pub fn hlen(&self, key : &str) -> usize{
+        match self.store.get(key){
+            Some(RedisValue::Hash(hash))=>{
+                hash.len()
+            }
+            _ => 0,
+        }
+    }
+
+    pub fn hgetall(&self, key : &str) -> HashMap<String, String>{
+        match self.store.get(key){
+            Some(RedisValue::Hash(hash))=>{
+                hash.clone()
+            }
+            _ => HashMap::new(),
+        }
+    }
+
+    pub fn hexists(&self, key : &str, field : &str) -> bool{
+        match self.store.get(key){
+            Some(RedisValue::Hash(hash))=>{
+                hash.contains_key(field)
+            }
+            _ => false,
+        }
+    }
 
 
 }
