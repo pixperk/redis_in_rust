@@ -7,7 +7,7 @@ use std::{
 };
 
 use store::db::Database;
-use resp::resp::handle_command;
+use resp::handler::handle_command;
 
 mod resp;
 mod store;
