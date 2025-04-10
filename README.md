@@ -3,7 +3,6 @@
   <img src="./assets/banner.png" alt="Rusty Redis Banner" />
 </p>
 
-
 A learning project where I'm building my own Redis-like server (baby to giga chad levels) in Rust — fully from scratch, no external crates for the core logic. Just raw TCP, RESP protocol parsing, and pure violence.
 
 ## Features so far 🍃
@@ -20,6 +19,13 @@ A learning project where I'm building my own Redis-like server (baby to giga cha
   - `DECR key`
   - `DECRBY key amount`
   - `DEL key`
+  - `EXISTS key`
+  - `EXPIRE key seconds`
+  - `TTL key`
+  - `PERSIST key`
+  - `KEYS pattern`
+  - List commands: `LPUSH`, `RPUSH`, `LPOP`, `RPOP`, `LRANGE`
+  - Hash commands: `HSET`, `HGET`, `HDEL`, `HGETALL`
 
 ## How to run 💻
 
@@ -55,14 +61,17 @@ OK
 
 ### Phase 2 — The rizzler arc continues
 
-- [ ] Proper error handling
-- [ ] Handle multiple data types (Lists, HashMaps, Sets)
-- [ ] Support for `EXPIRE` (key TTL)
-- [ ] LRU Eviction Policies
-- [ ] Pub/Sub
-- [ ] Async version (Tokio based) — giga rizzler mode
-- [ ] Benchmarks vs OG Redis for fun
-- [ ] Dockerize it
+- [ ] Modularization of code (time to stop writing sins)
+- [ ] Pub/Sub support (real Redis influencer vibes)
+- [ ] Sorted Sets (ZADD, ZSCORE, ZRANGE) maybe... idk if I’m that jobless
+- [ ] RDB / AOF Persistence (so data stops ghosting us)
+- [ ] Proper error handling everywhere (even for clowns)
+- [ ] Config support (give user some power)
+- [ ] Async version (Tokio powered ultra rizz)
+- [ ] LRU / LFU Eviction Policies (memory discipline)
+- [ ] Dockerize like a true backend bro
+- [ ] Benchmarks vs OG Redis (for flex only)
+- [ ] Custom CLI client (optional sauce)
 
 ---
 
@@ -79,9 +88,6 @@ Plus, flex material for my resume & Twitter.
 Massive inspiration from:
 - [redis.io docs](https://redis.io/docs/latest/)
 - [RESP Protocol Spec](https://redis.io/docs/reference/protocol-spec/)
-
----
-
 
 ---
 
