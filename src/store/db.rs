@@ -1,6 +1,6 @@
 use std::{
-    collections::{HashMap, HashSet},
-    time::{Duration, Instant},
+    collections::HashMap,
+    time::Instant,
 };
 
 use crate::types::RedisValue;
