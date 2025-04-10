@@ -1,4 +1,4 @@
-use crate::db::Database;
+use crate::store::db::Database;
 
 fn wrong_args(cmd: &str) -> String {
     format!("-ERR wrong number of arguments for '{}'\r\n", cmd)

@@ -6,11 +6,16 @@ use std::{
     thread,
 };
 
-use db::Database;
-use resp::handle_command;
+use store::db::Database;
+use resp::resp::handle_command;
 
 mod resp;
-mod db;
+mod store;
+mod types;
+
+
+
+
 
 fn main() {
     println!("Redis (Rust Edition) starting on port 6379");
