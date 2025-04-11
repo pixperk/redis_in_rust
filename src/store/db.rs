@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use crate::types::RedisValue;
 
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Database {
     store: HashMap<String, RedisValue>, // key: value
     #[serde(skip_serializing, skip_deserializing)]
@@ -20,10 +20,6 @@ impl Database {
             store: HashMap::new(),
             expiry: HashMap::new(),
         }
-    }
-
-    pub fn default() -> Self {
-        Database::new()
     }
 
     pub fn store_ref(&self) -> &HashMap<String, RedisValue> {

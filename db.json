@@ -1,0 +1,14 @@
+{
+  "store": {
+    "me": {
+      "Hash": {
+        "name": "yash",
+        "type": "nerd",
+        "alterego": "pixperk"
+      }
+    },
+    "name": {
+      "String": "yash"
+    }
+  }
+}

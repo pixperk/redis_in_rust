@@ -1,11 +1,13 @@
 use std::{fs, path::Path};
 
+use serde::{Deserialize, Serialize};
+
 use crate::store::Database;
 
 use super::persister::Persister;
 
 
-#[derive(Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct JsonPersister {
     path: String,
 }  
@@ -23,7 +25,13 @@ impl Persister for JsonPersister{
         }
 
         let data = fs::read_to_string(&self.path).ok()?;
-        serde_json::from_str(&data).ok()
+        match serde_json::from_str(&data) {
+            Ok(db) => Some(db),
+            Err(e) => {
+                eprintln!("Failed to parse db.json: {e}");
+                None
+            }
+        }
     }
 
     fn save(&self, db:&Database) -> Result<(), Box<dyn std::error::Error>> {

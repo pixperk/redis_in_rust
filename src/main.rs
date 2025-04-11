@@ -1,19 +1,23 @@
+use std::sync::Arc;
+
 mod server;
 mod store;
 mod resp;
 mod types;
 mod client;
 mod persistence;
+mod utils;
 
-use store::db::Database;
-use std::sync::{Arc, Mutex};
+use crate::persistence::JsonPersister;
+
 
 const REDIS_PORT: &str = "127.0.0.1:6379";
 
 fn main() {
     println!("🚀 Redis (Rust Edition) listening on {REDIS_PORT}");
 
-    let db = Arc::new(Mutex::new(Database::new()));
+    let persister = Arc::new(JsonPersister::new("db.json"));
+   
 
-    server::run(REDIS_PORT, db);
+    server::run(REDIS_PORT, persister);
 }
