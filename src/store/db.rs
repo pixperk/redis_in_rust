@@ -3,12 +3,15 @@ use std::{
     time::Instant,
 };
 
+use serde::{Deserialize, Serialize};
+
 use crate::types::RedisValue;
 
 
-
+#[derive(Serialize, Deserialize)]
 pub struct Database {
     store: HashMap<String, RedisValue>, // key: value
+    #[serde(skip_serializing, skip_deserializing)]
     expiry: HashMap<String, Instant>,     // key: expiry time
 }
 

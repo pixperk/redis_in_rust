@@ -3,6 +3,7 @@ mod store;
 mod resp;
 mod types;
 mod client;
+mod persistence;
 
 use store::db::Database;
 use std::sync::{Arc, Mutex};
