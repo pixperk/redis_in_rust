@@ -1,6 +1,5 @@
 use std::{
-    collections::HashMap,
-    time::Instant,
+    collections::HashMap, time::Instant
 };
 
 use serde::{Deserialize, Serialize};
@@ -21,6 +20,10 @@ impl Database {
             store: HashMap::new(),
             expiry: HashMap::new(),
         }
+    }
+
+    pub fn default() -> Self {
+        Database::new()
     }
 
     pub fn store_ref(&self) -> &HashMap<String, RedisValue> {
