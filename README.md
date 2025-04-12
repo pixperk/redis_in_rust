@@ -1,95 +1,157 @@
-# 🔥 rizzlerdb — Building Redis from scratch in Rust
+🔥 rizzlerdb — Building Redis from Scratch in Rust
+
 <p align="center">
-  <img src="./assets/banner.png" alt="Rusty Redis Banner" />
-</p>
+  <img src="./assets/banner.png" alt="rizzlerdb logo" />
+</p>A blazing-fast, from-scratch Redis-like server written in Rust.
 
-A learning project where I'm building my own Redis-like server (baby to giga chad levels) in Rust — fully from scratch, no external crates for the core logic. Just raw TCP, RESP protocol parsing, and pure violence.
+No frameworks. No shortcuts. Just raw TCP, manual RESP parsing, and pure backend violence.
 
-## Features so far 🍃
 
-- Multi-threaded TCP server (yes, ours is multi-threaded unlike OG Redis lmao)
-- Basic RESP protocol parsing
-- Commands implemented:
-  - `PING`
-  - `ECHO`
-  - `SET key value`
-  - `GET key`
-  - `INCR key`
-  - `INCRBY key amount`
-  - `DECR key`
-  - `DECRBY key amount`
-  - `DEL key`
-  - `EXISTS key`
-  - `EXPIRE key seconds`
-  - `TTL key`
-  - `PERSIST key`
-  - `KEYS pattern`
-  - List commands: `LPUSH`, `RPUSH`, `LPOP`, `RPOP`, `LRANGE`
-  - Hash commands: `HSET`, `HGET`, `HDEL`, `HGETALL`
+---
 
-## How to run 💻
+🚀 Architecture Overview
 
-```bash
+Clients connect via raw TCP on port 6379
+
+Each connection is handled in a new thread (multithreaded)
+
+Incoming commands are parsed using a RESP protocol handler
+
+All data is stored in a central Database struct, protected by Arc<Mutex<_>>
+
+For mutating commands, persistence is triggered through a Persister trait
+
+Current implementation: JsonPersister (writes to db.json)
+
+On startup, server attempts to load existing state from disk
+
+
+
+---
+
+✅ Features Implemented
+
+☑ Core Features
+
+[x] Multithreaded TCP server
+
+[x] Manual RESP protocol parser
+
+[x] In-memory data store with Rust HashMap + Vec
+
+[x] Auto persistence with JsonPersister
+
+[x] Load existing state from db.json on boot
+
+
+☑ Commands
+
+🧠 String Ops
+
+PING, ECHO, SET, GET, DEL, EXISTS, INCR, INCRBY, DECR, DECRBY
+
+
+⏳ Expiry & TTL
+
+EXPIRE, TTL, PERSIST
+
+
+🧺 List Ops
+
+LPUSH, RPUSH, LPOP, RPOP, LRANGE
+
+📐Set Ops
+
+SADD, SREM, SMEMBERS, SISMEMBER
+
+
+🗃️ Hash Ops
+
+HSET, HGET, HDEL, HGETALL
+
+
+🔍 Other
+
+KEYS with pattern matching (basic globbing)
+
+
+
+---
+
+📂 Run It Locally
+
 cargo run
-```
 
-And in another terminal:
+In a separate terminal:
 
-```bash
 redis-cli -p 6379
-```
 
-Try out commands like:
+Try out:
 
-```bash
 > SET name gigachad
-OK
-
 > GET name
-"gigachad"
+> INCR count
+> LPUSH queue task1
+> HSET user name yash
 
-> INCR counter
-(integer) 1
-
-> DEL name
-(integer) 1
-```
 
 ---
 
-## What's cooking next? 🍳
+🔮 Next Phase
 
-### Phase 2 — The rizzler arc continues
+What’s next in the evolution of the RizzlerDB:
 
-- [ ] Modularization of code (time to stop writing sins)
-- [ ] Pub/Sub support (real Redis influencer vibes)
-- [ ] Sorted Sets (ZADD, ZSCORE, ZRANGE) maybe... idk if I’m that jobless
-- [ ] RDB / AOF Persistence (so data stops ghosting us)
-- [ ] Proper error handling everywhere (even for clowns)
-- [ ] Config support (give user some power)
-- [ ] Async version (Tokio powered ultra rizz)
-- [ ] LRU / LFU Eviction Policies (memory discipline)
-- [ ] Dockerize like a true backend bro
-- [ ] Benchmarks vs OG Redis (for flex only)
-- [ ] Custom CLI client (optional sauce)
+[ ] Background expiry cleanup workers
 
----
+[ ] Refactor and modularize the codebase (structure time)
 
-## Why this project? 🤔
+[ ] Pub/Sub (broadcast the gospel)
 
-Redis is love. Rust is life. And building things from scratch teaches you more than 100 tutorials combined.
+[ ] Async server with Tokio
 
-Plus, flex material for my resume & Twitter.
+[ ] Config file support (customizable ports, persist toggle)
 
----
+[ ] LRU / LFU eviction strategies
 
-## Credits
+[ ] RDB-style snapshotting
 
-Massive inspiration from:
-- [redis.io docs](https://redis.io/docs/latest/)
-- [RESP Protocol Spec](https://redis.io/docs/reference/protocol-spec/)
+[ ] AOF persistence
+
+[ ] Dockerization for deployment
+
+[ ] Benchmarks vs Redis (for the flex)
+
+[ ] Custom CLI client for rizzlerdb
+
+
 
 ---
 
-Star it ⭐ | Fork it 🍴 | Play with it 🤹‍♂️
+🤔 Why This Project?
+
+Redis is the king of in-memory stores. Rust is a systems beast. Combine both, and you learn internals, low-level programming, system design, and multithreading all at once.
+
+This is a backend villain origin story — raw, educational, and eventually production-grade.
+
+
+---
+
+📎 Repo
+
+GitHub: github.com/pixperk/redis_in_rust
+
+
+---
+
+🙏 Credits
+
+Redis Documentation
+
+RESP Protocol Spec
+
+
+
+---
+
+Star it ⭐ | Fork it 🍴 | Hack it 🧠 | Rizz it 🦝
 
