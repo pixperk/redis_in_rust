@@ -1,4 +1,4 @@
-🔥 rizzlerdb — Building Redis from Scratch in Rust
+# 🔥 rizzlerdb — Building Redis from Scratch in Rust
 
 <p align="center">
   <img src="./assets/banner.png" alt="rizzlerdb logo" />
