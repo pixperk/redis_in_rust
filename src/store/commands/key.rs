@@ -1,6 +1,6 @@
-use std::time::{Duration, Instant};
 
-use crate::store::Database;
+
+use crate::{store::Database, utils::current_unix_timestamp};
 
 impl Database{
     pub fn exists(&mut self, keys: &[String]) -> usize {
@@ -26,21 +26,26 @@ impl Database{
         if self.is_expired(key) || !self.store_ref().contains_key(key) {
             0
         } else {
-            self.expiry_mut().insert(key.to_string(), Instant::now() + Duration::from_secs(seconds));
+            let now = current_unix_timestamp();
+            let expire_at = now + seconds;
+            self.expiry_mut().insert(key.to_string(), expire_at);
             1
         }
     }
+    
 
     pub fn ttl(&mut self, key: &str) -> isize {
         if self.is_expired(key) || !self.store_ref().contains_key(key) {
-            -2  // Redis returns -2 for non-existing key
-        } else if let Some(expire_time) = self.expiry_ref().get(key) {
-            let dur = expire_time.saturating_duration_since(Instant::now());
-            dur.as_secs() as isize
+            -2  // Key does not exist
+        } else if let Some(&expire_at) = self.expiry_ref().get(key) {
+            let now = current_unix_timestamp();
+            let ttl = expire_at.saturating_sub(now);
+            ttl as isize
         } else {
-            -1  // key exists but no expiry
+            -1  // Key exists, no expiry
         }
     }
+    
 
 
     pub fn persist(&mut self, key: &str) -> usize {

@@ -1,18 +1,20 @@
-use std::time::{Duration, Instant};
 
-use crate::{store::Database, types::RedisValue};
+
+use crate::{store::Database, types::RedisValue, utils::current_unix_timestamp};
 
 impl Database{
     pub fn set(&mut self, key: &str, value: String, ttl: Option<u64>) {
         self.store_mut()
             .insert(key.to_string(), RedisValue::String(value));
+    
         if let Some(seconds) = ttl {
-            self.expiry_mut()
-                .insert(key.to_string(), Instant::now() + Duration::from_secs(seconds));
+            let expire_at = current_unix_timestamp() + seconds;
+            self.expiry_mut().insert(key.to_string(), expire_at);
         } else {
             self.expiry_mut().remove(key);
         }
     }
+    
 
     // Now returns None if key is expired.
     pub fn get(&mut self, key: &str) -> Option<String> {

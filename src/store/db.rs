@@ -1,6 +1,5 @@
-use std::{
-    collections::HashMap, time::Instant
-};
+use std:: collections::HashMap;
+
 
 use serde::{Deserialize, Serialize};
 
@@ -10,8 +9,7 @@ use crate::types::RedisValue;
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Database {
     store: HashMap<String, RedisValue>, // key: value
-    #[serde(skip_serializing, skip_deserializing)]
-    expiry: HashMap<String, Instant>,     // key: expiry time
+    expiry: HashMap<String, u64>,     // key: expiry time
 }
 
 impl Database {
@@ -26,7 +24,7 @@ impl Database {
         &self.store
     }
 
-    pub fn expiry_ref(&self) -> &HashMap<String, Instant> {
+    pub fn expiry_ref(&self) -> &HashMap<String, u64> {
         &self.expiry
     }
 
@@ -34,7 +32,7 @@ impl Database {
         &mut self.store
     }
 
-    pub fn expiry_mut(&mut self) -> &mut HashMap<String, Instant> {
+    pub fn expiry_mut(&mut self) -> &mut HashMap<String, u64> {
         &mut self.expiry
     }
 
