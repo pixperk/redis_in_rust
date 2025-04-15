@@ -6,6 +6,7 @@ mod resp;
 mod types;
 mod client;
 mod persistence;
+mod pubsub;
 mod utils;
 
 use crate::persistence::JsonPersister;

@@ -5,7 +5,7 @@ use crate::{store::Database, types::RedisValue};
 impl Database{
     
     pub fn hset(&mut self, key: &str, field: &str, value: &str) -> usize {
-       
+
         let entry = self
             .store_mut()
             .entry(key.to_string())
