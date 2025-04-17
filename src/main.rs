@@ -6,19 +6,18 @@ mod resp;
 mod types;
 mod client;
 mod persistence;
-mod pubsub;
 mod utils;
 
 use crate::persistence::JsonPersister;
 
+#[tokio::main]
+async fn main(){
+    const REDIS_PORT: &str = "127.0.0.1:6379";
 
-const REDIS_PORT: &str = "127.0.0.1:6379";
 
-fn main() {
     println!("🚀 Redis (Rust Edition) listening on {REDIS_PORT}");
 
     let persister = Arc::new(JsonPersister::new("db.json"));
    
-
-    server::run(REDIS_PORT, persister);
+    server::run(REDIS_PORT, persister).await;
 }

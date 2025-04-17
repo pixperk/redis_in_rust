@@ -1,7 +1,7 @@
-use std::{
-    sync::{Arc, Mutex},
-    thread
-};
+use std::sync::Arc;
+use tokio::sync::Mutex;
+
+
 
 use crate::{persistence::Persister, store::Database};
 
@@ -43,10 +43,14 @@ pub fn current_unix_timestamp() -> u64 {
         .unwrap()
         .as_secs()
 }
-
 pub fn start_expiry_worker(db: Arc<Mutex<Database>>, persister: Arc<dyn Persister + Send + Sync>) {
-    thread::spawn(move || loop {
-        let mut db = db.lock().unwrap();
-        db.remove_expired_keys(&*persister);
+    tokio::spawn(async move {
+        loop {
+            {
+                let mut db = db.lock().await;
+                db.remove_expired_keys(&*persister);
+            }
+            tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+        }
     });
 }

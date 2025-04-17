@@ -2,13 +2,16 @@ use crate::{
     persistence::Persister, resp::handler::handle_command, store::db::Database,
     utils::is_mutating_command,
 };
-use std::{
-    io::{Read, Write},
+use std::sync::Arc;
+use tokio::sync::Mutex;
+
+
+use tokio::{
+    io::{AsyncReadExt, AsyncWriteExt},
     net::TcpStream,
-    sync::{Arc, Mutex},
 };
 
-pub fn handle_connection(
+pub async fn handle_connection(
     mut stream: TcpStream,
     db: Arc<Mutex<Database>>,
     persister: Arc<dyn Persister + Send + Sync>,
@@ -16,7 +19,7 @@ pub fn handle_connection(
     let mut buf = [0; 512];
 
     loop {
-        let bytes_read = match stream.read(&mut buf) {
+        let bytes_read = match stream.read(&mut buf).await {
             Ok(0) => {
                 println!("Client disconnected");
                 break;
@@ -31,20 +34,14 @@ pub fn handle_connection(
         let input = String::from_utf8_lossy(&buf[..bytes_read]);
         println!("Received: {input}");
 
-        let mut db = match db.lock() {
-            Ok(guard) => guard,
-            Err(e) => {
-                eprintln!("Failed to lock DB: {e}");
-                break;
-            }
-        };
+        let mut db = db.lock().await;
 
         let response = handle_command(&input, &mut db);
 
         let command_name = input
             .lines()
             .find(|line| line.starts_with('$'))
-            .map(|_| input.lines().nth(2).unwrap_or("")) // crude but works for RESP
+            .map(|_| input.lines().nth(2).unwrap_or("")) 
             .unwrap_or("");
 
         //SAVE to disk if mutating
@@ -56,7 +53,7 @@ pub fn handle_connection(
             }
         }
 
-        if let Err(e) = stream.write_all(response.as_bytes()) {
+        if let Err(e) = stream.write_all(response.as_bytes()).await {
             eprintln!("Write error: {e}");
             break;
         }
