@@ -32,6 +32,7 @@ Now powered by Tokio for async handling and Pub/Sub support.
 - [x] Multithreaded + async TCP socket handling
 - [x] Manual RESP parser (no dependencies)
 - [x] In-memory store using `HashMap`, `Vec`, and friends
+- [x] Background expiry workers
 - [x] Auto persistence using `JsonPersister`
 - [x] Boot-time state restoration from disk
 - [x] Pub/Sub system with channel subscriptions and async broadcasts
@@ -98,8 +99,6 @@ Sample commands:
 
 What’s next in the evolution of the RizzlerDB:
 
-- [ ] Background expiry cleanup workers
-- [ ] Full codebase refactor & modularization
 - [ ] More robust Pub/Sub support (multi-channel, unsubscribe, patterns)
 - [ ] Config file support (custom port, persistence toggle, etc.)
 - [ ] LRU / LFU eviction strategies
