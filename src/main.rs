@@ -9,6 +9,8 @@ mod persistence;
 mod utils;
 mod pubsub;
 
+use pubsub::PubSub;
+
 use crate::persistence::JsonPersister;
 
 #[tokio::main]
@@ -19,6 +21,7 @@ async fn main(){
     println!("🚀 Redis (Rust Edition) listening on {REDIS_PORT}");
 
     let persister = Arc::new(JsonPersister::new("db.json"));
+    let pubsub = PubSub::new();
    
-    server::run(REDIS_PORT, persister).await;
+    server::run(REDIS_PORT, persister, pubsub).await;
 }

@@ -1,9 +1,10 @@
+use crate::pubsub::PubSub;
 use crate::{client, persistence::Persister, store::db::Database, utils::start_expiry_worker};
 use std::sync::Arc;
-use tokio::sync::Mutex;
 use tokio::net::TcpListener;
+use tokio::sync::Mutex;
 
-pub async fn run(addr: &str, persister: Arc<dyn Persister + Send + Sync>) {
+pub async fn run(addr: &str, persister: Arc<dyn Persister + Send + Sync>, pubsub: Arc<PubSub>) {
     let listener = TcpListener::bind(addr)
         .await
         .expect("Failed to bind to address");
@@ -33,9 +34,10 @@ pub async fn run(addr: &str, persister: Arc<dyn Persister + Send + Sync>) {
 
                 let db = Arc::clone(&db);
                 let persister = Arc::clone(&persister);
+                let pubsub = Arc::clone(&pubsub);
 
                 tokio::spawn(async move {
-                    client::handle_connection(stream, db, persister).await;
+                    client::handle_connection(stream, db, persister, pubsub).await;
                 });
             }
             Err(e) => eprintln!("Failed to accept connection: {e}"),
