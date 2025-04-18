@@ -54,8 +54,18 @@ pub async fn handle_command(
         }
 
         "PUBLISH" => {
-           handle_publish(parts.iter().map(|s: &String| s.as_str()).collect(), pubsub, writer).await;
-           "".to_string()
+
+            if parts.len() < 3 {
+                return "-ERR usage: PUBLISH <channel> <message>\n".to_string();
+             }
+            // Spawn a new async task for publishing
+            tokio::spawn(async move {
+               handle_publish(parts.iter().map(|s: &String| s.as_str()).collect(), pubsub).await;
+               
+            });
+
+            
+            "+OK published\r\n".to_string()
         }
 
         _ => "-ERR unknown command\r\n".to_string(),

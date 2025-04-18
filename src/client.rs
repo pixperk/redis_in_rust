@@ -46,9 +46,7 @@ pub async fn handle_connection(
             .unwrap_or("")
             .to_uppercase();
 
-        /* if command_name == "SUBSCRIBE"{
-            continue;
-        } */
+       
 
         let mut db = db.lock().await;
 
@@ -62,8 +60,6 @@ pub async fn handle_connection(
 
        
 
-       
-
         // Save to disk if mutating
         if is_mutating_command(&command_name) {
             if let Err(e) = persister.save(&db) {
@@ -73,10 +69,18 @@ pub async fn handle_connection(
             }
         }
 
+        if command_name!= "SUBSCRIBE"{
         let mut s = writer.lock().await;
         if let Err(e) = s.write_all(response.as_bytes()).await {
             eprintln!("❌ Write error: {e}");
             break;
         }
+        if let Err(e) = s.flush().await {
+            eprintln!("❌ Flush error: {e}");
+            break;
+        }
+        drop(s); // Explicitly drop the lock to avoid holding it longer than necessary
+       
     }
+}
 }

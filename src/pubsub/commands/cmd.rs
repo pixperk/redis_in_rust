@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std:: sync::Arc;
 use tokio::{io::AsyncWriteExt, net::tcp::OwnedWriteHalf, sync::Mutex};
 
 use crate::pubsub::PubSub;
@@ -51,23 +51,12 @@ pub async fn handle_subscribe(
 pub async fn handle_publish(
     parts: Vec<&str>,
     pubsub: Arc<PubSub>,
-    writer: Arc<Mutex<OwnedWriteHalf>>,
-) {
-    if parts.len() < 3 {
-        let mut w = writer.lock().await;
-        let _ = w
-            .write_all(b"-ERR usage: PUBLISH <channel> <message>\n")
-            .await;
-        let _ = w.flush().await;
-        return;
-    }
+)  {
+    
 
     let channel = parts[1];
     let message = parts[2..].join(" ");
     pubsub.publish(channel, message).await;
 
-    let mut w = writer.lock().await;
-    let _ = w.write_all(b"+OK published\n").await;
-    let _ = w.flush().await;
-    drop(w);
+    
 }
