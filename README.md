@@ -1,88 +1,79 @@
-# 🔥 rizzlerdb — Building Redis from Scratch in Rust (Async + Pub/Sub Powered)
+# 🔥 rizzlerdb — A Redis-Inspired Server in Rust (Async + Pub/Sub Ready)
 
 <p align="center">
-  <img src="./assets/banner.png" alt="rizzlerdb logo" />
+  <img src="./assets/banner.jpg" alt="rizzlerdb logo" />
 </p>
 
-A blazing-fast, from-scratch Redis-like server written in Rust.
+**rizzlerdb** is a lightweight, high-performance Redis-like server built from the ground up in Rust.
 
-No frameworks. No shortcuts. Just raw TCP, manual RESP parsing, and pure backend villainy.
-Now powered by Tokio for async handling and Pub/Sub support.
+No frameworks. No shortcuts. Just raw TCP, a hand-crafted RESP protocol parser, and deep control over memory and concurrency using Tokio. Designed for learning, performance, and backend mastery.
 
 ---
 
 🚀 **Architecture Overview**
 
-- 🧩 Clients connect via raw TCP on port `6379`
-- 🧵 Each connection is handled asynchronously with Tokio tasks
-- 🧠 Incoming commands are parsed using a hand-written RESP protocol parser
-- 🧱 All data lives in a central `Database` struct guarded by `Arc<Mutex<_>>`
-- 💾 For mutating ops, persistence is triggered using a `Persister` trait
-  - Current: `JsonPersister` (writes state to `db.json`)
-- 🔄 On boot, the server attempts to hydrate itself from disk
-- 📣 Pub/Sub support with real-time message broadcasting via channels
+- 🤩 Clients connect over raw TCP on port `6379`
+- 🥵 Each connection is handled asynchronously via Tokio tasks
+- 🧠 Commands are parsed with a custom-built RESP protocol parser
+- 🧱 Shared state is managed with an `Arc<Mutex<_>>`-based central `Database`
+- 📂 All mutations are persisted using a pluggable `Persister` trait
+  - Default: `JsonPersister`, writing to `db.json`
+- 🔄 On startup, previous state is rehydrated from disk
+- 📣 Full support for Pub/Sub using async channel broadcasting
 
 ---
 
-✅ **Features Implemented**
+✅ **Implemented Features**
 
-### ☑ Core Infra
+### ☑ Infrastructure
 
-- [x] Async server with Tokio
-- [x] Multithreaded + async TCP socket handling
-- [x] Manual RESP parser (no dependencies)
-- [x] In-memory store using `HashMap`, `Vec`, and friends
-- [x] Background expiry workers
-- [x] Auto persistence using `JsonPersister`
-- [x] Boot-time state restoration from disk
-- [x] Pub/Sub system with channel subscriptions and async broadcasts
+- [x] Async TCP server using Tokio
+- [x] Manual RESP parser (zero dependencies)
+- [x] In-memory storage with `HashMap`, `Vec`, and other core types
+- [x] Multithreaded, safe concurrency with Tokio + `Arc<Mutex<_>>`
+- [x] Background expiry workers for keys with TTL
+- [x] Auto persistence via `JsonPersister`
+- [x] Disk hydration at boot
+- [x] Real-time Pub/Sub system
 
-### ☑ Command Support
+### ☑ Supported Commands
 
-#### 🧠 String Ops
-
+#### 🧠 String Operations
 `PING`, `ECHO`, `SET`, `GET`, `DEL`, `EXISTS`, `INCR`, `INCRBY`, `DECR`, `DECRBY`
 
 #### ⏳ Expiry & TTL
-
 `EXPIRE`, `TTL`, `PERSIST`
 
-#### 🧺 List Ops
-
+#### 🧺 List Operations
 `LPUSH`, `RPUSH`, `LPOP`, `RPOP`, `LRANGE`, `LLEN`, `LINDEX`, `LSET`
 
-#### 📐 Set Ops
-
+#### 📐 Set Operations
 `SADD`, `SREM`, `SMEMBERS`, `SISMEMBER`, `SCARD`
 
-#### 🗃️ Hash Ops
-
+#### 💃 Hash Operations
 `HSET`, `HGET`, `HDEL`, `HKEYS`, `HVALS`, `HGETALL`, `HEXISTS`, `HLEN`
 
 #### 📡 Pub/Sub
+`PUBLISH`, `SUBSCRIBE` — instant message delivery across clients
 
-`PUBLISH`, `SUBSCRIBE` — real-time message delivery between clients
-
-#### 🔍 Other Goodies
-
-`KEYS` with basic globbing/pattern matching
+#### 🔍 Miscellaneous
+`KEYS` with basic pattern matching
 
 ---
 
-📂 **Run It Locally**
+📂 **Running Locally**
 
+Start the server:
 ```bash
 cargo run
 ```
 
-In another terminal:
-
+Connect using the Redis CLI:
 ```bash
 redis-cli -p 6379
 ```
 
-Sample commands:
-
+Sample session:
 ```redis
 > SET name gigachad
 > GET name
@@ -95,44 +86,37 @@ Sample commands:
 
 ---
 
-🔮 **Next Phase**
+🔮 **Planned Enhancements**
 
-What’s next in the evolution of the RizzlerDB:
-
-- [ ] More robust Pub/Sub support (multi-channel, unsubscribe, patterns)
-- [ ] Config file support (custom port, persistence toggle, etc.)
-- [ ] LRU / LFU eviction strategies
-- [ ] RDB-style snapshotting (save memory state)
-- [ ] AOF-style persistence (append-only file)
-- [ ] Docker support (containerized deployment)
-- [ ] Performance benchmarks vs Redis (because why not?)
-- [ ] Build a custom CLI client (no more redis-cli dependency)
-- [ ] Add logging, telemetry, and proper error handling
-- [ ] CI/CD pipeline + GitHub Actions
+- [ ] Advanced Pub/Sub features (patterns, multi-channel, unsubscribe)
+- [ ] Config file support (e.g., custom ports, persistence settings)
+- [ ] Key eviction strategies (LRU / LFU)
+- [ ] RDB-style memory snapshots
+- [ ] AOF-style persistence (append-only)
 
 ---
 
-🤔 **Why This Project?**
+🤔 **Motivation**
 
-Redis is the godfather of in-memory databases. Rust is the language of backend legends. Combine both and you’re forced to learn the internals, system design, memory management, concurrency models, protocol parsing, and async runtime behavior.
+Redis is a cornerstone of high-performance backend architecture. Rust offers powerful tools for safe concurrency, low-level control, and memory safety. Building rizzlerdb merges both worlds, delivering a hands-on learning journey through network programming, protocol design, persistence strategies, and async architectures.
 
-This isn’t just a project. It’s an origin story. A backend villain arc in full swing.
+This isn’t just a clone. It’s a deep dive. A backend developer's training ground.
 
 ---
 
-📎 **Repo**
+📌 **Repository**
 
 GitHub: [github.com/pixperk/redis_in_rust](https://github.com/pixperk/redis_in_rust)
 
 ---
 
-🙏 **Credits**
+🙏 **Acknowledgements**
 
-- Redis Official Docs
-- RESP Protocol Spec
-- Tokio and Rustacean Community
+- Redis Official Documentation
+- RESP Protocol Specification
+- Tokio and the broader Rust community
 
 ---
 
-Star it ⭐ | Fork it 🍴 | Hack it 🧠 | Rizz it 🦝 | Deploy it 💥
+Star it ⭐ | Fork it 🍴 | Hack it 🧠 | Rizz it 🭝 | Deploy it 💥
 
