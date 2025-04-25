@@ -16,19 +16,41 @@ impl PubSub {
         Arc::new(Self::default())
     }
 
-    pub async fn subscribe(&self, channel: &str) -> mpsc::UnboundedReceiver<String> {
-        let (tx, rx) = unbounded_channel();
-        let mut channels = self.channels.lock().await;
-        channels.entry(channel.to_string()).or_default().push(tx);
-        rx
-    }
+    pub async fn subscribe(&self, channel: &str) -> mpsc::UnboundedReceiver<String>
+        {
+            let (tx, rx) = unbounded_channel();
+            let mut channels = self.channels.lock().await;
+            channels.entry(channel.to_string()).or_default().push(tx);
+            rx
+        }
+
 
     pub async fn publish(&self, channel: &str, message: String) {
         let mut channels = self.channels.lock().await;
+        let mut delivered = 0;
 
         if let Some(subscribers) = channels.get_mut(channel) {
-            // Retain only alive subscribers
-            subscribers.retain(|subscriber| subscriber.send(message.clone()).is_ok());
+            subscribers.retain(|subscriber| {
+                if subscriber.is_closed() {
+                    // Remove dead subscribers without publishing
+                    false
+                } else {
+                    match subscriber.send(message.clone()) {
+                        Ok(_) => {
+                            delivered += 1;
+                            true
+                        }
+                        Err(_) => false,
+                    }
+                }
+            });
         }
+
+        println!(
+            "{{ \"channel\": \"{}\", \"message\": \"{}\", \"subscribers\": {} }}",
+            channel, message, delivered
+        );
     }
+
+   
 }
