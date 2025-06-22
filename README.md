@@ -1,4 +1,4 @@
-# 🔥 rizzlerdb — A Redis-Inspired Server in Rust (Async + Pub/Sub Ready)
+# 🔥 A Redis-Inspired Server in Rust (Async + Pub/Sub Ready)
 
 <p align="center">
   <img src="./assets/banner.jpg" alt="rizzlerdb logo" />
