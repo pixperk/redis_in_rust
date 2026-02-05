@@ -6,16 +6,19 @@ impl Database{
     
 
     pub fn sadd(&mut self, key: &str, values: &[String]) -> usize {
-        
+        self.is_expired(key);
         let entry = self
             .store_mut()
             .entry(key.to_string())
             .or_insert(RedisValue::Set(HashSet::new()));
         if let RedisValue::Set(set) = entry {
+            let mut added = 0;
             for value in values.iter() {
-                set.insert(value.clone());
+                if set.insert(value.clone()) {
+                    added += 1;
+                }
             }
-            set.len()
+            added
         } else {
             0
         }

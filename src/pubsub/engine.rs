@@ -25,14 +25,13 @@ impl PubSub {
         }
 
 
-    pub async fn publish(&self, channel: &str, message: String) {
+    pub async fn publish(&self, channel: &str, message: String) -> usize {
         let mut channels = self.channels.lock().await;
         let mut delivered = 0;
 
         if let Some(subscribers) = channels.get_mut(channel) {
             subscribers.retain(|subscriber| {
                 if subscriber.is_closed() {
-                    // Remove dead subscribers without publishing
                     false
                 } else {
                     match subscriber.send(message.clone()) {
@@ -50,6 +49,7 @@ impl PubSub {
             "{{ \"channel\": \"{}\", \"message\": \"{}\", \"subscribers\": {} }}",
             channel, message, delivered
         );
+        delivered
     }
 
    

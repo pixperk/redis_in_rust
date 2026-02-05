@@ -32,6 +32,7 @@ impl Database{
         for key in keys {
             self.is_expired(key);
             if self.store_mut().remove(key).is_some() {
+                self.expiry_mut().remove(key);
                 removed += 1;
             }
         }

@@ -71,27 +71,37 @@ impl Database{
         }
     }
 
-    pub fn lindex(&mut self, key: &str, index: usize) -> Option<String> {
+    pub fn lindex(&mut self, key: &str, index: isize) -> Option<String> {
         if self.is_expired(key) {
             return None;
         }
         match self.store_ref().get(key) {
-            Some(RedisValue::List(list)) => list.get(index).cloned(),
+            Some(RedisValue::List(list)) => {
+                let len = list.len() as isize;
+                let idx = if index < 0 { len + index } else { index };
+                if idx < 0 || idx >= len {
+                    None
+                } else {
+                    list.get(idx as usize).cloned()
+                }
+            }
             _ => None,
         }
     }
 
-    pub fn lset(&mut self, key: &str, index: usize, value: String) -> Result<(), &'static str> {
+    pub fn lset(&mut self, key: &str, index: isize, value: String) -> Result<(), &'static str> {
         if self.is_expired(key) {
             return Err("Key does not exist");
         }
         match self.store_mut().get_mut(key) {
             Some(RedisValue::List(ref mut list)) => {
-                if index < list.len() {
-                    list[index] = value;
-                    Ok(())
-                } else {
+                let len = list.len() as isize;
+                let idx = if index < 0 { len + index } else { index };
+                if idx < 0 || idx >= len {
                     Err("Index out of range")
+                } else {
+                    list[idx as usize] = value;
+                    Ok(())
                 }
             }
             _ => Err("Key does not exist or is not a list"),
@@ -105,9 +115,9 @@ impl Database{
         match self.store_ref().get(key) {
             Some(RedisValue::List(list)) => {
                 let len = list.len() as isize;
-                let start = if start < 0 { len + start } else { start };
-                let end = if end < 0 { len + end } else { end };
-                if start < 0 || end < 0 || start >= len || end >= len || start > end {
+                let start = if start < 0 { (len + start).max(0) } else { start };
+                let end = if end < 0 { len + end } else { end.min(len - 1) };
+                if start >= len || end < 0 || start > end {
                     vec![]
                 } else {
                     list[start as usize..=end as usize].to_vec()

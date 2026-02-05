@@ -23,8 +23,8 @@ pub fn handle_key (cmd: &str, parts: &[String], db: &mut Database) -> String {
         "EXPIRE" => {
             if let (Some(key), Some(seconds_str)) = (parts.get(1), parts.get(2)) {
                 if let Ok(seconds) = seconds_str.parse::<u64>() {
-                    db.expire(key, seconds);
-                    "+OK\r\n".to_string()
+                    let result = db.expire(key, seconds);
+                    format!(":{}\r\n", result)
                 } else {
                     "-ERR invalid seconds\r\n".to_string()
                 }
@@ -42,8 +42,8 @@ pub fn handle_key (cmd: &str, parts: &[String], db: &mut Database) -> String {
         }
         "PERSIST" => {
             if let Some(key) = parts.get(1) {
-                db.persist(key);
-                "+OK\r\n".to_string()
+                let result = db.persist(key);
+                format!(":{}\r\n", result)
             } else {
                 wrong_args("PERSIST")
             }

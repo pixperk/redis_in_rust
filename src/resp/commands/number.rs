@@ -15,10 +15,12 @@ pub fn handle_number (cmd: &str, parts: &[String], db: &mut Database) -> String 
 
         "INCRBY" => {
             if let (Some(key), Some(arg)) = (parts.get(1), parts.get(2)) {
-                let by: i64 = arg.parse().unwrap_or(0);
-                match db.incr_by(key, by) {
-                    Ok(val) => format!(":{}\r\n", val),
-                    Err(e) => format!("-ERR {}\r\n", e),
+                match arg.parse::<i64>() {
+                    Ok(by) => match db.incr_by(key, by) {
+                        Ok(val) => format!(":{}\r\n", val),
+                        Err(e) => format!("-ERR {}\r\n", e),
+                    },
+                    Err(_) => "-ERR value is not an integer or out of range\r\n".to_string(),
                 }
             } else {
                 wrong_args("INCRBY")
@@ -27,10 +29,12 @@ pub fn handle_number (cmd: &str, parts: &[String], db: &mut Database) -> String 
 
         "DECRBY" => {
             if let (Some(key), Some(arg)) = (parts.get(1), parts.get(2)) {
-                let by: i64 = arg.parse().unwrap_or(0);
-                match db.incr_by(key, -by) {
-                    Ok(val) => format!(":{}\r\n", val),
-                    Err(e) => format!("-ERR {}\r\n", e),
+                match arg.parse::<i64>() {
+                    Ok(by) => match db.incr_by(key, -by) {
+                        Ok(val) => format!(":{}\r\n", val),
+                        Err(e) => format!("-ERR {}\r\n", e),
+                    },
+                    Err(_) => "-ERR value is not an integer or out of range\r\n".to_string(),
                 }
             } else {
                 wrong_args("DECRBY")

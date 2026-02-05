@@ -21,19 +21,19 @@ pub fn is_expired(&mut self, key: &str) -> bool {
 pub fn remove_expired_keys(&mut self, persister : &dyn Persister){
     let now = current_unix_timestamp();
 
-
-
-    let expired_keys : Vec<String> = self.expiry_mut()
+    let expired_keys : Vec<String> = self.expiry_ref()
     .iter()
-    .filter(|(_, &exp)| exp<= now)
+    .filter(|(_, &exp)| exp <= now)
     .map(|(key, _)| key.clone())
     .collect();
 
-    
+    if expired_keys.is_empty() {
+        return;
+    }
 
-    for key in expired_keys {
-        self.store_mut().remove(&key);
-        self.expiry_mut().remove(&key);
+    for key in &expired_keys {
+        self.store_mut().remove(key);
+        self.expiry_mut().remove(key);
         println!("Key expired, thus removed: {}", key);
     }
 

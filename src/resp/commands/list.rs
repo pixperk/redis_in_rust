@@ -56,7 +56,7 @@ pub fn handle_list(cmd: &str, parts: &[String], db: &mut Database) -> String {
 
         "LINDEX" => {
             if let (Some(key), Some(index_str)) = (parts.get(1), parts.get(2)) {
-                if let Ok(index) = index_str.parse::<usize>() {
+                if let Ok(index) = index_str.parse::<isize>() {
                     if let Some(value) = db.lindex(key, index) {
                         bulk_string(&value)
                     } else {
@@ -74,7 +74,7 @@ pub fn handle_list(cmd: &str, parts: &[String], db: &mut Database) -> String {
             if let (Some(key), Some(index_str), Some(value)) =
                 (parts.get(1), parts.get(2), parts.get(3))
             {
-                if let Ok(index) = index_str.parse::<usize>() {
+                if let Ok(index) = index_str.parse::<isize>() {
                     match db.lset(key, index, value.to_string()) {
                         Ok(()) => "+OK\r\n".to_string(),
                         Err(e) => format!("-ERR {}\r\n", e),

@@ -5,14 +5,15 @@ use crate::{store::Database, types::RedisValue};
 impl Database{
     
     pub fn hset(&mut self, key: &str, field: &str, value: &str) -> usize {
-
+        self.is_expired(key);
         let entry = self
             .store_mut()
             .entry(key.to_string())
             .or_insert(RedisValue::Hash(HashMap::new()));
         if let RedisValue::Hash(hash) = entry {
+            let is_new = !hash.contains_key(field);
             hash.insert(field.to_string(), value.to_string());
-            hash.len()
+            if is_new { 1 } else { 0 }
         } else {
             0
         }
